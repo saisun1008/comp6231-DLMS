@@ -2,24 +2,24 @@ package dlms.comp.common.protocol;
 
 import java.io.Serializable;
 
-public class ReplicaReplyContent<T> implements Serializable
+public class ReplicaReplyContent implements Serializable
 {
 	private static final long serialVersionUID = -7191281080559132917L;
-	private T result = null;
+	private Object result = null;
 	private String resultSender = null;
 
-	public ReplicaReplyContent(T result, String sender)
+	public ReplicaReplyContent(Object result, String sender)
 	{
 		this.result = result;
 		resultSender = sender;
 	}
 
-	public T getResult()
+	public Object getResult()
 	{
 		return result;
 	}
 
-	public void setResult(T result)
+	public void setResult(Object result)
 	{
 		this.result = result;
 	}

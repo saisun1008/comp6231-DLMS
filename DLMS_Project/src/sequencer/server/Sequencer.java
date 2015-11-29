@@ -8,6 +8,7 @@ import java.util.HashMap;
 
 import sequencer.comp.QueueManagementIF;
 import sequencer.comp.TaskExecutor;
+import dlms.comp.common.Configuration;
 import dlms.comp.common.protocol.ReplicaReplyContent;
 import dlms.comp.common.protocol.SequencerHeader;
 import dlms.comp.common.protocol.UDPProtocol;
@@ -15,20 +16,20 @@ import dlms.comp.udp.util.UDPListener;
 import dlms.comp.udp.util.UDPNotifierIF;
 import dlms.comp.udp.util.UDPSender;
 
-public class Sequencer<T> implements UDPNotifierIF, Runnable, QueueManagementIF
+public class Sequencer implements UDPNotifierIF, Runnable, QueueManagementIF
 {
 	private UDPListener feMessageReceiver = null;
-	private Queue<UDPProtocol<Object>> fifoQueue = new LinkedList<UDPProtocol<Object>>();
+	private Queue<UDPProtocol> fifoQueue = new LinkedList<UDPProtocol>();
 	private long uniqueIdBase = 0;
 	private static int messageCounter = 0;
-	private HashMap<Integer,UDPProtocol<Object>> sentList = null;
+	private HashMap<Integer,UDPProtocol> sentList = null;
 	private TaskExecutor taskExecutor = null;
 
 	public Sequencer()
 	{
-		feMessageReceiver = new UDPListener(9999, this);
+		feMessageReceiver = new UDPListener(Configuration.SEQUENCER_PORT, this);
 		uniqueIdBase = Calendar.getInstance().getTimeInMillis();
-		sentList = new HashMap<Integer, UDPProtocol<Object>>();
+		sentList = new HashMap<Integer, UDPProtocol>();
 		taskExecutor = new TaskExecutor(this);
 	}
 	
@@ -40,17 +41,17 @@ public class Sequencer<T> implements UDPNotifierIF, Runnable, QueueManagementIF
 
 	public static void main(String[] args)
 	{
-		Sequencer sequencer = new Sequencer<>();
+		Sequencer sequencer = new Sequencer();
 		Thread t = new Thread(sequencer);
 		t.start();
-		UDPProtocol<String[]> msg = new UDPProtocol<String[]>();
-		msg.setReplicaReply(new ReplicaReplyContent<String[]>(new String[]
+		UDPProtocol msg = new UDPProtocol();
+		msg.setReplicaReply(new ReplicaReplyContent(new String[]
 		{
 				"hehe", "haha"
 		}, "1"));
 		try
 		{
-			UDPSender.sendUDPPacket("localhost", 9999, msg);
+			UDPSender.sendUDPPacket(Configuration.SEQUENCER_IP, Configuration.SEQUENCER_PORT, msg);
 			Thread.sleep(24214214);
 		} catch (IOException e)
 		{
@@ -62,7 +63,7 @@ public class Sequencer<T> implements UDPNotifierIF, Runnable, QueueManagementIF
 	}
 
 	@Override
-	public <T> void notifyMessage(UDPProtocol<Object> message)
+	public  void notifyMessage(UDPProtocol message)
 	{
 		SequencerHeader header = new SequencerHeader((int) uniqueIdBase + messageCounter);
 		messageCounter++;
@@ -75,6 +76,7 @@ public class Sequencer<T> implements UDPNotifierIF, Runnable, QueueManagementIF
 	@Override
 	public void run()
 	{
+		startSequencer();
 		while (true)
 		{
 
@@ -83,15 +85,14 @@ public class Sequencer<T> implements UDPNotifierIF, Runnable, QueueManagementIF
 	}
 
 	@Override
-	public UDPProtocol<Object> tryToGetQueueHead()
+	public UDPProtocol tryToGetQueueHead()
 	{
 		return fifoQueue.poll();
 	}
 
 	@Override
-	public void moveToSentList(UDPProtocol<Object> message)
+	public void moveToSentList(UDPProtocol message)
 	{
 		sentList.put(message.getSequencerHeader().getUUID(), message);
 	}
-
 }

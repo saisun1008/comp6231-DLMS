@@ -2,14 +2,13 @@ package sequencer.comp;
 
 import java.util.TimerTask;
 
-import dlms.comp.common.Configuration;
 import dlms.comp.common.protocol.UDPProtocol;
 
-public class Task extends TimerTask
+public class SequencerTask extends TimerTask
 {
 	private QueueManagementIF managementIF;
 
-	public Task(QueueManagementIF interf)
+	public SequencerTask(QueueManagementIF interf)
 	{
 		managementIF = interf;
 	}
@@ -22,7 +21,7 @@ public class Task extends TimerTask
 
 	private void completeTask()
 	{
-		UDPProtocol<Object> message = managementIF.tryToGetQueueHead();
+		UDPProtocol message = managementIF.tryToGetQueueHead();
 		if (message != null)
 		{
 			Multicaster.multiCastMessage(message);

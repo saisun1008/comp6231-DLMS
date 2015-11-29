@@ -13,7 +13,7 @@ import dlms.comp.common.protocol.UDPProtocol;
 public class Multicaster
 {
 
-	public static void multiCastMessage(UDPProtocol<Object> message)
+	public static void multiCastMessage(UDPProtocol message)
 	{
 		try
 		{

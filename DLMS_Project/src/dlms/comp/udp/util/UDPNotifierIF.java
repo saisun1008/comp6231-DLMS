@@ -4,5 +4,5 @@ import dlms.comp.common.protocol.UDPProtocol;
 
 public interface UDPNotifierIF
 {
-public <T> void notifyMessage(UDPProtocol<Object> message);
+public void notifyMessage(UDPProtocol message);
 }

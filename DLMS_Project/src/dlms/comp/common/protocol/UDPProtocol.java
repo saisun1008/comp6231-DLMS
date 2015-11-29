@@ -2,12 +2,12 @@ package dlms.comp.common.protocol;
 
 import java.io.Serializable;
 
-public class UDPProtocol<T> implements Serializable
+public class UDPProtocol implements Serializable
 {
 	private static final long serialVersionUID = 8161694624845522195L;
 	private FEHeader feHeader = null;
 	private SequencerHeader sequencerHeader = null;
-	private ReplicaReplyContent<T> replicaReply = null;
+	private ReplicaReplyContent replicaReply = null;
 	private ClientRequestContent clientRequest = null;
 
 	public FEHeader getFeHeader()
@@ -30,12 +30,12 @@ public class UDPProtocol<T> implements Serializable
 		this.sequencerHeader = sequencerHeader;
 	}
 
-	public ReplicaReplyContent<T> getReplicaReply()
+	public ReplicaReplyContent getReplicaReply()
 	{
 		return replicaReply;
 	}
 
-	public void setReplicaReply(ReplicaReplyContent<T> replicaReply)
+	public void setReplicaReply(ReplicaReplyContent replicaReply)
 	{
 		this.replicaReply = replicaReply;
 	}

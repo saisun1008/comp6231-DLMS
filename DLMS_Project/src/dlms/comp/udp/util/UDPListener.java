@@ -68,7 +68,7 @@ public class UDPListener implements Runnable
 			try
 			{
 				serverSocket.receive(receivePacket);
-				UDPProtocol<Object> message = processIncomingPacket(receivePacket);
+				UDPProtocol message = processIncomingPacket(receivePacket);
 				if (message == null)
 				{
 					continue;
@@ -92,17 +92,17 @@ public class UDPListener implements Runnable
 	 * @return
 	 * @throws ClassNotFoundException
 	 */
-	private <T> UDPProtocol<T> processIncomingPacket(DatagramPacket receivePacket)
+	private UDPProtocol processIncomingPacket(DatagramPacket receivePacket)
 			throws ClassNotFoundException
 	{
 		byte[] data = receivePacket.getData();
-		UDPProtocol<T> protocol = null;
+		UDPProtocol protocol = null;
 		ByteArrayInputStream in = new ByteArrayInputStream(data);
 		try
 		{
 			ObjectInputStream is = new ObjectInputStream(in);
 
-			protocol = (UDPProtocol<T>) is.readObject();
+			protocol = (UDPProtocol) is.readObject();
 			in.close();
 			is.close();
 		} catch (IOException e)

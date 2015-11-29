@@ -2,6 +2,8 @@ package dlms.comp.common.protocol;
 
 import java.io.Serializable;
 
+import dlms.comp.common.Configuration;
+
 public class ClientRequestContent implements Serializable
 {
 	private static final long serialVersionUID = 7359779695244125794L;
@@ -18,6 +20,17 @@ public class ClientRequestContent implements Serializable
 	private String currentDueDate = null;
 	private String newDueDate = null;
 	private int loanAmount = 0;
+	private Configuration.requestType requestType = null;
+
+	public Configuration.requestType getRequestType()
+	{
+		return requestType;
+	}
+
+	public void setRequestType(Configuration.requestType requestType)
+	{
+		this.requestType = requestType;
+	}
 
 	public String getFirstName()
 	{
