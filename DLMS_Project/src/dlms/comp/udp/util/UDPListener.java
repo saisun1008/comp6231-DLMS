@@ -29,6 +29,7 @@ public class UDPListener implements Runnable
 	public void startListening()
 	{
 		thread = new Thread(this);
+		thread.setName("Sequencer UDP Thread");
 		thread.start();
 	}
 

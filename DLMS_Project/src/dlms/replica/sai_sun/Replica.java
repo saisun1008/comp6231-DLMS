@@ -31,6 +31,7 @@ public class Replica implements UDPNotifierIF
 
 	public void startReplica()
 	{
+		multicastReceiverThread.setName("Replica Thread");
 		multicastReceiverThread.start();
 	}
 

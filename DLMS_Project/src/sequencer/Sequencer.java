@@ -1,4 +1,4 @@
-package sequencer.server;
+package sequencer;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -9,6 +9,7 @@ import java.util.HashMap;
 import sequencer.comp.QueueManagementIF;
 import sequencer.comp.TaskExecutor;
 import dlms.comp.common.Configuration;
+import dlms.comp.common.protocol.ClientRequestContent;
 import dlms.comp.common.protocol.ReplicaReplyContent;
 import dlms.comp.common.protocol.SequencerHeader;
 import dlms.comp.common.protocol.UDPProtocol;
@@ -43,12 +44,18 @@ public class Sequencer implements UDPNotifierIF, Runnable, QueueManagementIF
 	{
 		Sequencer sequencer = new Sequencer();
 		Thread t = new Thread(sequencer);
+		t.setName("Sequencer Thread");
 		t.start();
-		UDPProtocol msg = new UDPProtocol();
-		msg.setReplicaReply(new ReplicaReplyContent(new String[]
-		{
-				"hehe", "haha"
-		}, "1"));
+		
+		/*Following code is an example about how to send message
+		 * to sequencer
+		 * 
+		 * 
+		 * UDPProtocol msg = new UDPProtocol();
+		ClientRequestContent clientRequest = new ClientRequestContent();
+		clientRequest.setCurrentBank("TD");
+		clientRequest.setRequestType(Configuration.requestType.PRINT_INFO);
+		msg.setClientRequest(clientRequest);
 		try
 		{
 			UDPSender.sendUDPPacket(Configuration.SEQUENCER_IP, Configuration.SEQUENCER_PORT, msg);
@@ -59,7 +66,7 @@ public class Sequencer implements UDPNotifierIF, Runnable, QueueManagementIF
 		} catch (InterruptedException e)
 		{
 			e.printStackTrace();
-		}
+		}*/
 	}
 
 	@Override
@@ -69,8 +76,6 @@ public class Sequencer implements UDPNotifierIF, Runnable, QueueManagementIF
 		messageCounter++;
 		message.setSequencerHeader(header);
 		fifoQueue.add(message);
-		String[] result = (String[]) message.getReplicaReply().getResult();
-		System.out.println(result[0]);
 	}
 
 	@Override
