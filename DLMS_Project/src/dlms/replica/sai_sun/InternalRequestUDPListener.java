@@ -14,7 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import dlms.replica.sai_sun.ReplicaConfiguration.messageType;
 
 /**
- * UDP listener class, which is a thread running separately from the main
+ * UDP listener class, which is a thread running separately from the fe.main
  * thread, it keeps listening on a given port
  * 
  * @author Sai

@@ -27,7 +27,7 @@ public class BankServer
 	private int m_rmiPort;
 	private int m_udpPort;
 	// private int m_tcpPort;
-	// lock the main thread after a loan request to other two banks are sent,
+	// lock the fe.main thread after a loan request to other two banks are sent,
 	// unlock the thread once the other two banks have responded, if no one
 	// respond, then request fails, if one of the bank responds, then use the
 	// data received from that bank and current bank to decide if customer can
