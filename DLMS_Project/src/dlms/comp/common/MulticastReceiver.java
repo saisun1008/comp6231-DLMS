@@ -90,7 +90,8 @@ public class MulticastReceiver implements Runnable
 			if (receivedList.containsKey(protocol.getSequencerHeader().getUUID())
 					|| processedList.containsKey(protocol.getSequencerHeader().getUUID()))
 			{
-				// if it's already received, then we do nothing
+				// if it's already received, then we only multicast it to the group
+				Multicaster.multiCastMessage(protocol);
 			} else
 			{
 				// if it's first time receiving this message, put it in the list
