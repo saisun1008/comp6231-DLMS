@@ -19,85 +19,86 @@ import dlms.comp.udp.util.UDPSender;
 
 public class Sequencer implements UDPNotifierIF, Runnable, QueueManagementIF
 {
-	private UDPListener feMessageReceiver = null;
-	private Queue<UDPProtocol> fifoQueue = new LinkedList<UDPProtocol>();
-	private long uniqueIdBase = 0;
-	private static int messageCounter = 0;
-	private HashMap<Integer,UDPProtocol> sentList = null;
-	private TaskExecutor taskExecutor = null;
+    private UDPListener feMessageReceiver = null;
+    private Queue<UDPProtocol> fifoQueue = new LinkedList<UDPProtocol>();
+    private long uniqueIdBase = 0;
+    private static int messageCounter = 0;
+    private HashMap<Integer, UDPProtocol> sentList = null;
+    private TaskExecutor taskExecutor = null;
 
-	public Sequencer()
-	{
-		feMessageReceiver = new UDPListener(Configuration.SEQUENCER_PORT, this);
-		uniqueIdBase = Calendar.getInstance().getTimeInMillis();
-		sentList = new HashMap<Integer, UDPProtocol>();
-		taskExecutor = new TaskExecutor(this);
-	}
-	
-	public void startSequencer()
-	{
-		feMessageReceiver.startListening();
-		taskExecutor.startExecutor();
-	}
+    public Sequencer()
+    {
+        feMessageReceiver = new UDPListener(Configuration.SEQUENCER_PORT, this);
+        uniqueIdBase = Calendar.getInstance().getTimeInMillis();
+        sentList = new HashMap<Integer, UDPProtocol>();
+        taskExecutor = new TaskExecutor(this);
+    }
 
-	public static void main(String[] args)
-	{
-		Sequencer sequencer = new Sequencer();
-		Thread t = new Thread(sequencer);
-		t.setName("Sequencer Thread");
-		t.start();
-		
-		/*Following code is an example about how to send message
-		 * to sequencer
-		 * 
-		 * 
-		 * UDPProtocol msg = new UDPProtocol();
-		ClientRequestContent clientRequest = new ClientRequestContent();
-		clientRequest.setCurrentBank("TD");
-		clientRequest.setRequestType(Configuration.requestType.PRINT_INFO);
-		msg.setClientRequest(clientRequest);
-		try
-		{
-			UDPSender.sendUDPPacket(Configuration.SEQUENCER_IP, Configuration.SEQUENCER_PORT, msg);
-			Thread.sleep(24214214);
-		} catch (IOException e)
-		{
-			e.printStackTrace();
-		} catch (InterruptedException e)
-		{
-			e.printStackTrace();
-		}*/
-	}
+    public void startSequencer()
+    {
+        feMessageReceiver.startListening();
+        taskExecutor.startExecutor();
+        System.out.println("Sequencer is up and running");
+    }
 
-	@Override
-	public  void notifyMessage(UDPProtocol message)
-	{
-		SequencerHeader header = new SequencerHeader((int) uniqueIdBase + messageCounter);
-		messageCounter++;
-		message.setSequencerHeader(header);
-		fifoQueue.add(message);
-	}
+    public static void main(String[] args)
+    {
+        Sequencer sequencer = new Sequencer();
+        Thread t = new Thread(sequencer);
+        t.setName("Sequencer Thread");
+        t.start();
 
-	@Override
-	public void run()
-	{
-		startSequencer();
-		while (true)
-		{
+        /*
+         * Following code is an example about how to send message to sequencer
+         * 
+         * 
+         * UDPProtocol msg = new UDPProtocol(); ClientRequestContent
+         * clientRequest = new ClientRequestContent();
+         * clientRequest.setCurrentBank("TD");
+         * clientRequest.setRequestType(Configuration.requestType.PRINT_INFO);
+         * msg.setClientRequest(clientRequest); try {
+         * UDPSender.sendUDPPacket(Configuration.SEQUENCER_IP,
+         * Configuration.SEQUENCER_PORT, msg); Thread.sleep(24214214); } catch
+         * (IOException e) { e.printStackTrace(); } catch (InterruptedException
+         * e) { e.printStackTrace(); }
+         */
+    }
 
-		}
+    @Override
+    public void notifyMessage(UDPProtocol message)
+    {
+        SequencerHeader header = new SequencerHeader((int) uniqueIdBase + messageCounter);
+        messageCounter++;
+        message.setSequencerHeader(header);
+        fifoQueue.add(message);
+    }
 
-	}
+    @Override
+    public void run()
+    {
+        startSequencer();
+        while (true)
+        {
+            try
+            {
+                Thread.sleep(600);
+            } catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+        }
 
-	@Override
-	public UDPProtocol tryToGetQueueHead()
-	{
-		return fifoQueue.poll();
-	}
+    }
 
-	@Override
-	public void moveToSentList(UDPProtocol message)
-	{
-		sentList.put(message.getSequencerHeader().getUUID(), message);
-	}
+    @Override
+    public UDPProtocol tryToGetQueueHead()
+    {
+        return fifoQueue.poll();
+    }
+
+    @Override
+    public void moveToSentList(UDPProtocol message)
+    {
+        sentList.put(message.getSequencerHeader().getUUID(), message);
+    }
 }
