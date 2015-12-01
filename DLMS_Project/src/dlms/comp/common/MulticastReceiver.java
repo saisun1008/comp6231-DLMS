@@ -27,7 +27,8 @@ public class MulticastReceiver implements Runnable
 	private String multicastGroupIp = null;
 	private UDPNotifierIF notifyIf = null;
 	private TreeMap<Integer, UDPProtocol> receivedList = null;
-	private TreeMap<Integer, UDPProtocol> processedList = null;
+	private TreeMap<Integer, Boolean> processedList = null;
+	private TreeMap<Integer, Boolean> multicastedList = null;
 
 	public MulticastReceiver(UDPNotifierIF interf)
 	{
@@ -36,7 +37,8 @@ public class MulticastReceiver implements Runnable
 		notifyIf = interf;
 		// Guarantees that the content will be sorted by UUID
 		receivedList = new TreeMap<Integer, UDPProtocol>();
-		processedList = new TreeMap<Integer, UDPProtocol>();
+		processedList = new TreeMap<Integer, Boolean>();
+		multicastedList = new TreeMap<Integer, Boolean>();
 		MulticastReceiverTask task = new MulticastReceiverTask();
 		Timer timer = new Timer(true);
 		timer.scheduleAtFixedRate(task, 10, 10);
@@ -87,17 +89,20 @@ public class MulticastReceiver implements Runnable
 
 			protocol = (UDPProtocol) is.readObject();
 			// ok, let's check if this message is received before
-			if (receivedList.containsKey(protocol.getSequencerHeader().getUUID())
-					|| processedList.containsKey(protocol.getSequencerHeader().getUUID()))
+			if (multicastedList.containsKey(protocol.getSequencerHeader().getUUID()))
 			{
-				// if it's already received, then we only multicast it to the group
-				Multicaster.multiCastMessage(protocol);
+				// it's already multicasted
 			} else
 			{
-				// if it's first time receiving this message, put it in the list
-				receivedList.put(protocol.getSequencerHeader().getUUID(), protocol);
-				// and multicast it to the group
-				Multicaster.multiCastMessage(protocol);
+				if (!receivedList.containsKey(protocol.getSequencerHeader().getUUID())
+						&& !processedList.containsKey(protocol.getSequencerHeader().getUUID()))
+				{// if it's first time receiving this message, put it in the
+					// list
+					receivedList.put(protocol.getSequencerHeader().getUUID(), protocol);
+					// and multicast it to the group
+					Multicaster.multiCastMessage(protocol);
+					multicastedList.put(protocol.getSequencerHeader().getUUID(), true);
+				}
 			}
 			in.close();
 			is.close();
@@ -125,7 +130,7 @@ public class MulticastReceiver implements Runnable
 				if (message != null)
 				{
 					notifyIf.notifyMessage(message);
-					processedList.put(message.getSequencerHeader().getUUID(), message);
+					processedList.put(message.getSequencerHeader().getUUID(), true);
 				}
 			}
 		}

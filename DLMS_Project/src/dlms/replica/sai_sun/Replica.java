@@ -1,10 +1,13 @@
 package dlms.replica.sai_sun;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import dlms.comp.common.MulticastReceiver;
+import dlms.comp.common.protocol.ReplicaReplyContent;
 import dlms.comp.common.protocol.UDPProtocol;
 import dlms.comp.udp.util.UDPNotifierIF;
+import dlms.comp.udp.util.UDPSender;
 
 public class Replica implements UDPNotifierIF
 {
@@ -68,77 +71,141 @@ public class Replica implements UDPNotifierIF
 		return null;
 	}
 
-	public String openAccount(String bank, String firstName, String lastName, String emailAddress,
-			String phoneNumber, String password)
+	/**
+	 * get bank server object from server list by its name
+	 * 
+	 * @param name
+	 *            name of the bank server0
+	 * @return bank server object
+	 */
+	private BankServer getServerById(int id)
+	{
+		return m_serverList.get(id - 1);
+	}
+
+	public String openAccount(String firstName, String lastName, String emailAddress,
+			String phoneNumber, String password, int bankId)
 	{
 		// return empty string if the bank name can't be found in the server
 		// list
-		return getServerByName(bank) == null ? "" : getServerByName(bank).openAccount(bank,
-				firstName, lastName, emailAddress, phoneNumber, password);
+		return getServerById(bankId) == null ? "" : getServerById(bankId).openAccount(
+				ReplicaConfiguration.BANK_NAME_POOL[bankId - 1], firstName, lastName, emailAddress,
+				phoneNumber, password);
 	}
 
-	public String getLoan(String bank, String accountNumber, String password, double loanAmount)
+	public boolean getLoan(String accountNumber, String password, double loanAmount, int bankId)
 	{
 		// return empty string if the bank name can't be found in the server
 		// list
-		return getServerByName(bank) == null ? "" : getServerByName(bank).getLoan(bank,
-				accountNumber, password, loanAmount);
+		return getServerById(bankId) == null ? false : !getServerById(bankId).getLoan(
+				ReplicaConfiguration.BANK_NAME_POOL[bankId - 1], accountNumber, password,
+				loanAmount).equals("");
 	}
 
-	public boolean delayPayment(String bank, String loanID, String currentDueDate, String newDueDate)
+	public boolean delayPayment(String loanID, String currentDueDate, String newDueDate, int bankId)
 	{
 		// return false if the bank name can't be found in the server list
-		return getServerByName(bank) == null ? false : getServerByName(bank).delayPayment(bank,
-				loanID, currentDueDate, newDueDate);
+		return getServerById(bankId) == null ? false : getServerById(bankId)
+				.delayPayment(ReplicaConfiguration.BANK_NAME_POOL[bankId - 1], loanID,
+						currentDueDate, newDueDate);
 	}
 
-	public String printCustomerInfo(String bank)
+	public String printCustomerInfo(int bankId)
 	{
 		// return empty string if the bank name can't be found in the server
 		// list
-		return getServerByName(bank) == null ? "" : getServerByName(bank).printCustomerInfo(bank);
+		return getServerById(bankId) == null ? "" : getServerById(bankId).printCustomerInfo(
+				ReplicaConfiguration.BANK_NAME_POOL[bankId - 1]);
 	}
 
-	public String transferLoan(String LoanID, String CurrentBank, String OtherBank)
+	public boolean transferLoan(String LoanID, String CurrentBank, String OtherBank, int bankId)
 	{
 		// return empty string if the bank name can't be found in the server
 		// list
-		return getServerByName(CurrentBank) == null ? "" : getServerByName(CurrentBank)
-				.transferLoan(LoanID, CurrentBank, OtherBank);
+		return getServerByName(CurrentBank) == null ? false : !getServerByName(CurrentBank)
+				.transferLoan(LoanID, CurrentBank, OtherBank).equals("");
 	}
 
 	@Override
 	public void notifyMessage(UDPProtocol message)
 	{
+		ReplicaReplyContent reply = null;
+		Object ret = null;
 		switch (message.getClientRequest().getRequestType())
 		{
 		case OPEN_ACCOUNT:
-			openAccount(message.getClientRequest().getCurrentBank(), message.getClientRequest()
-					.getFirstName(), message.getClientRequest().getLastNmae(), message
-					.getClientRequest().getEmail(), message.getClientRequest().getPhoneNum(),
-					message.getClientRequest().getPassWord());
-			// TODO:send reply back to FE
+			ret = openAccount(message.getClientRequest().getFirstName(), message.getClientRequest()
+					.getLastNmae(), message.getClientRequest().getEmail(), message
+					.getClientRequest().getPhoneNum(), message.getClientRequest().getPassWord(),
+					message.getFeHeader().getBankId());
+			reply = new ReplicaReplyContent(ret, "replica1");
+			message.setReplicaReply(reply);
+			try
+			{
+				UDPSender.sendUDPPacket(fe.main.Configuration.FE_IP, fe.main.Configuration.FE_PORT,
+						message);
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 			break;
 
 		case GET_LOAN:
-			getLoan(message.getClientRequest().getCurrentBank(), Integer.toString(message
-					.getClientRequest().getAccountId()), message.getClientRequest().getPassWord(),
-					message.getClientRequest().getLoanAmount());
-			// TODO:send reply back to FE
+			ret = getLoan(Integer.toString(message.getClientRequest().getAccountId()), message
+					.getClientRequest().getPassWord(), message.getClientRequest().getLoanAmount(),
+					message.getFeHeader().getBankId());
+			reply = new ReplicaReplyContent(ret, "replica1");
+			message.setReplicaReply(reply);
+			try
+			{
+				UDPSender.sendUDPPacket(fe.main.Configuration.FE_IP, fe.main.Configuration.FE_PORT,
+						message);
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 			break;
 		case DELAY_LOAN:
-			delayPayment(message.getClientRequest().getCurrentBank(), Integer.toString(message
-					.getClientRequest().getLoanId()), message.getClientRequest()
-					.getCurrentDueDate(), message.getClientRequest().getNewDueDate());
-			// TODO:send reply back to FE
+			ret = delayPayment(Integer.toString(message.getClientRequest().getLoanId()), message
+					.getClientRequest().getCurrentDueDate(), message.getClientRequest()
+					.getNewDueDate(), message.getFeHeader().getBankId());
+			reply = new ReplicaReplyContent(ret, "replica1");
+			message.setReplicaReply(reply);
+			try
+			{
+				UDPSender.sendUDPPacket(fe.main.Configuration.FE_IP, fe.main.Configuration.FE_PORT,
+						message);
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 			break;
 		case PRINT_INFO:
-			printCustomerInfo(message.getClientRequest().getCurrentBank());
-			// TODO:send reply back to FE
+			ret = printCustomerInfo(message.getFeHeader().getBankId());
+			reply = new ReplicaReplyContent(ret, "replica1");
+			message.setReplicaReply(reply);
+			try
+			{
+				UDPSender.sendUDPPacket(fe.main.Configuration.FE_IP, fe.main.Configuration.FE_PORT,
+						message);
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 			break;
 		case TRANSFER_LOAN:
-			transferLoan(Integer.toString(message.getClientRequest().getLoanId()), message
-					.getClientRequest().getCurrentBank(), message.getClientRequest().getOtherBank());
+			ret = transferLoan(Integer.toString(message.getClientRequest().getLoanId()), message
+					.getClientRequest().getCurrentBank(), message.getClientRequest().getOtherBank(),message.getFeHeader().getBankId());
+			reply = new ReplicaReplyContent(ret, "replica1");
+			message.setReplicaReply(reply);
+			try
+			{
+				UDPSender.sendUDPPacket(fe.main.Configuration.FE_IP, fe.main.Configuration.FE_PORT,
+						message);
+			} catch (IOException e)
+			{
+				e.printStackTrace();
+			}
 			break;
 		default:
 			System.err.println("Operation not supported");

@@ -95,11 +95,11 @@ public class BankServerFE extends fe.bankserver.BankServerInterfacePOA implement
 			int udpPort = Configuration.FE_PORT;						
 			
 			bSocket = new DatagramSocket(udpPort);
-			byte[] buffer2 = new byte[1000];
+			byte[] buffer2 = new byte[1200];
 			
 			while(true)
 			{
-				buffer2 = new byte[1000];				
+				buffer2 = new byte[1200];				
 				
 				DatagramPacket reply = new DatagramPacket(buffer2, buffer2.length);
 				bSocket.receive(reply);
@@ -335,7 +335,7 @@ public class BankServerFE extends fe.bankserver.BankServerInterfacePOA implement
 		msg.setFeHeader(feHeader);
 		try
 		{
-			UDPSender.sendUDPPacket(Configuration.SEQUENCER_IP, Configuration.SEQUENCER_PORT, msg);
+			UDPSender.sendUDPPacket(dlms.comp.common.Configuration.SEQUENCER_IP, dlms.comp.common.Configuration.SEQUENCER_PORT, msg);
 			
 			Thread replyController = new Thread(new Runnable() {
 	            public void run()

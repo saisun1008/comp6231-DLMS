@@ -22,9 +22,9 @@ public class Loan implements Serializable
 	 * @param amount
 	 * @param date
 	 */
-	public Loan(String id, String account, double amount, String date)
+	public Loan(int id, String account, double amount, String date)
 	{
-		m_id = id;
+		m_id = Integer.toString(id);
 		m_accountId = account;
 		m_amount = amount;
 		m_dueDate = date;

@@ -28,10 +28,6 @@ public class Configuration {
 	public static final String ACCOUNT_EXISTS = "Customer already has an account!";
 	
 	public static final String FILE_PATH = "LogFiles/";
-		
-	public final static int SEQUENCER_PORT = 9999;
-	public final static String SEQUENCER_IP = "localhost";
-	
 	public final static int FE_PORT = 8888;
 	public final static String FE_IP = "localhost";
 }

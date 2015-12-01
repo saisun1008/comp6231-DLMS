@@ -111,8 +111,7 @@ public class Utility
 	 * @param content
 	 * @throws IOException
 	 */
-	public static <T> void sendUDPPacket(String host, int port, T content)
-			throws IOException
+	public static <T> void sendUDPPacket(String host, int port, T content) throws IOException
 	{
 		DatagramSocket Socket = new DatagramSocket();
 		InetAddress IPAddress = InetAddress.getByName(host);
@@ -120,8 +119,7 @@ public class Utility
 		ObjectOutputStream os = new ObjectOutputStream(outputStream);
 		os.writeObject(content);
 		byte[] data = outputStream.toByteArray();
-		DatagramPacket sendPacket = new DatagramPacket(data, data.length,
-				IPAddress, port);
+		DatagramPacket sendPacket = new DatagramPacket(data, data.length, IPAddress, port);
 		Socket.send(sendPacket);
 		Socket.close();
 	}
@@ -131,107 +129,40 @@ public class Utility
 		return java.util.Arrays.asList(array).indexOf(element);
 	}
 
-	public static int getRMIPortByBankName(String name)
+	public static int getUDPPortByBankName(String name)
 	{
-		int ret = getIndexFromArray(name.toUpperCase(),
-				ReplicaConfiguration.BANK_NAME_POOL);
+		int ret = getIndexFromArray(name.toUpperCase(), ReplicaConfiguration.BANK_NAME_POOL);
 		if (ret != -1)
 		{
-			return ReplicaConfiguration.REGISTERY_PORT_POOL[ret];
+			return ReplicaConfiguration.PORT_POOL[ret];
 		} else
 		{
 			return -1;
 		}
 	}
-
-	public static int getTCPPortByBankName(String name)
-	{
-		int ret = getIndexFromArray(name.toUpperCase(),
-				ReplicaConfiguration.BANK_NAME_POOL);
-		if (ret != -1)
-		{
-			return ReplicaConfiguration.TCP_PORT_POOL[ret];
-		} else
-		{
-			return -1;
-		}
-	}
-	
-	   public static int getUDPPortByBankName(String name)
-	    {
-	        int ret = getIndexFromArray(name.toUpperCase(),
-	                ReplicaConfiguration.BANK_NAME_POOL);
-	        if (ret != -1)
-	        {
-	            return ReplicaConfiguration.PORT_POOL[ret];
-	        } else
-	        {
-	            return -1;
-	        }
-	    }
 
 	public static String generateRandomUniqueId()
 	{
 		return Long.toString(Calendar.getInstance().getTime().getTime());
 	}
 
-	/**
-	 * Get all RMI services from specified ports, and return them in a string
-	 * array
-	 * 
-	 * @return
-	 */
-	public static String[] getRMIServices()
-	{
-		list.clear();
-		System.setProperty("java.security.policy", "security.policy");
 
-		if (System.getSecurityManager() == null)
-		{
-			System.setSecurityManager(new SecurityManager());
-		}
-		for (int i = 0; i < ReplicaConfiguration.BANK_NAME_POOL.length; i++)
-		{
-			try
-			{
-				Registry registry = LocateRegistry.getRegistry(
-						ReplicaConfiguration.HOST_NAME,
-						ReplicaConfiguration.REGISTERY_PORT_POOL[i]);
-				for (String str : registry.list())
-				{
-					list.add("[localhost:"
-							+ ReplicaConfiguration.REGISTERY_PORT_POOL[i] + "] : "
-							+ str);
-				}
-
-			} catch (RemoteException e)
-			{
-				e.printStackTrace();
-			}
-
-		}
-
-		return list.toArray(new String[list.size()]);
-	}
-
-
-	public static void sendMessageOverTcp(LoanProtocol protocol, String host,
-			int port) throws UnknownHostException, IOException
+	public static void sendMessageOverTcp(LoanProtocol protocol, String host, int port)
+			throws UnknownHostException, IOException
 	{
 		Socket socket = new Socket(host, port);
 
-		ObjectOutputStream outputStream = new ObjectOutputStream(
-				socket.getOutputStream());
+		ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
 
 		outputStream.writeObject(protocol);
 
 		outputStream.close();
 		socket.close();
 	}
-	
+
 	public static int getAvailablePort()
 	{
 		counter++;
-		return 10010+ counter;
+		return 10010 + counter;
 	}
 }
